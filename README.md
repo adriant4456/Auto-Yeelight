@@ -4,9 +4,9 @@ Autoyeelight polls continuously for the presence of an android phone, turning on
 
 ### Installing
 
-1.) Download auto_yee.py
-2.) Pip install python modules from requirements.txt
-3.) Run from console
+1. Download auto_yee.py
+2. Pip install python modules from requirements.txt
+3. Run from console
 
 ## Built With
 
