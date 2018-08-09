@@ -1,6 +1,6 @@
 # Auto Yeelight
 
-Autoyeelight polls continuously for the presence of an android phone, turning on a Yeelight smart bulb when the phone comes onto a local network and turning the light off when the phone disconnects from the network. The light is only turned if it is daylight outside.
+Autoyeelight polls for the presence of an android phone, turning on a Yeelight smart bulb when the phone comes onto a local network and turning the light off when the phone disconnects from the network. The light is only turned if it is daylight outside.
 
 ### Installing
 
