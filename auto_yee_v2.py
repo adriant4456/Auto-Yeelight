@@ -15,58 +15,22 @@ from datetime import datetime
 from datetime import timedelta
 
 
-def main():
-    sun_times = None 
-    open('yeelight log.txt', 'w').close     #to clear the log
-    start_time = time.time()
-    away_ping_count = 0     #sets variable that count no. pings no phone detected
-    while True:
-        sun_times = sunrise_scrape(sun_times, start_time)
-        bulb_turned_on_once = True #initialize bulb turned on once status
-        if away_ping_count < 4:
-            pass
-        else:
-            bulb_turned_on_once = False
-        ip = arp_scrape()
-        print('scrape done')
-        ping(ip)    #to refresh arp
-        if ip:
-            #bulb = bulb()
-            if checkarp(ip):
-                away_ping_count = 0
-                action_bulb(bulb,bulb_turned_on_once,sun_times)
-            else:
-                away_ping_count += 1
-                print('ping count is ' + str(away_ping_count))
-                for i in range(10):
-                    try:
-                        if bulb.get_properties()['power'] == 'on' and not bulb_turned_on_once:
-                            bulb.turn_off()
-                            file = open('yeelight log.txt', '+a')
-                            file.write('bulb turned off ' + str(time.localtime()) + '\n')
-                        print ('No phone on network')
-                        break
-                    except:
-                        sleep(2)
-                else:
-                    print('nor responding to pings but in ARP')
-                    pass
-        else:
-            print('Problem with scraping')
 
 #attribution to https://sunrise-sunset.org/api
 
-def action_bulb(bulb, bulb_turned_on_once, sun_times):
+def action_bulb(bulb, bulb_turned_on_once, sun_times, in_arp):
     for i in range(10):
         try:
             if (bulb.get_properties()['power'] == 'off'
                 and not bulb_turned_on_once
-                and not is_daylight(sun_times)):
+                and not is_daylight(sun_times))
+                and in_arp:
                 bulb.turn_on()
                 file = open('yeelight log.txt', '+a')
                 file.write('bulb turned on ' + str(time.localtime()) + '\n')
                 return True
-            if bulb.get_properties()['power'] == 'on' and not bulb_turned_on_once:
+            if bulb.get_properties()['power'] == 'on'
+                and not in_arp:
                 bulb.turn_off()
                 file = open('yeelight log.txt', '+a')
                 file.write('bulb turned off ' + str(time.localtime()) + '\n')
@@ -82,7 +46,7 @@ def bulb():
         try:
             bulb_list = yeelight.discover_bulbs()
             bulb_ip = bulb_list[0]['ip']
-            bulb = Bulb(bulb_ip)
+            result = Bulb(bulb_ip)
             print('bulb info got')
             return bulb
         except BulbException as e:
@@ -146,8 +110,8 @@ def arp_scrape():
             for i in arp[4:-1:4]:
                 ip_list.append(i.text)
             browser.close()
-            if '24:da:9b:0a:66:4f' in mac_list:
-                index = mac_list.index('24:da:9b:0a:66:4f')
+            if 'b4:f7:a1:e7:8b:99' in mac_list:
+                index = mac_list.index('b4:f7:a1:e7:8b:99')
                 phone_ip = ip_list[index]
                 print('Phone IP address is ' + phone_ip)
                 return phone_ip
@@ -171,7 +135,7 @@ def ping(ip):
         return False
     
 def checkarp(ip):
-    for i in range(10)
+    for i in range(10):
         try:
             result = str(cmdout('arp -a'))
             if ip in result:
@@ -183,3 +147,42 @@ def checkarp(ip):
         except CalledProcessError as e:
             sleep(2)
     raise
+
+def main():
+    sun_times = None 
+    open('yeelight log.txt', 'w').close     #to clear the log
+    start_time = time.time()
+    away_ping_count = 0     #sets variable that count no. pings no phone detected
+    while True:
+        sun_times = sunrise_scrape(sun_times, start_time)
+        bulb_turned_on_once = True #initialize bulb turned on once status
+        if away_ping_count < 4:
+            pass
+        else:
+            bulb_turned_on_once = False
+        ip = arp_scrape()
+        print('scrape done')
+        ping(ip)    #to refresh arp
+        if ip:
+            bulb_object = bulb()
+            if checkarp(ip):
+                away_ping_count = 0
+                action_bulb(bulb_object,bulb_turned_on_once,sun_times, True)
+            else:
+                away_ping_count += 1
+                print('ping count is ' + str(away_ping_count))
+                for i in range(10):
+                    try:
+                        if bulb.get_properties()['power'] == 'on' and not bulb_turned_on_once:
+                            bulb.turn_off()
+                            file = open('yeelight log.txt', '+a')
+                            file.write('bulb turned off ' + str(time.localtime()) + '\n')
+                        print ('No phone on network')
+                        break
+                    except:
+                        sleep(2)
+                else:
+                    print('nor responding to pings but in ARP')
+                    pass
+        else:
+            print('Problem with scraping')
