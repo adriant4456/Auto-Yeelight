@@ -53,6 +53,9 @@ def bulb():
         except BulbException as e:
             print(e)
             sleep(2)
+        except IndexError as e:
+            print('No bulb detected')
+            sleep(5)
     
             
 
